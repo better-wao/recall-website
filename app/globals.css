@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Sky — unchanged palette */
+.sky-bg {
+  background:
+    radial-gradient(ellipse at 50% 110%, rgba(184, 212, 245, 0.55) 0%, transparent 55%),
+    linear-gradient(to bottom, #6FAEF3 0%, #5EA0F2 45%, #6BAAF3 100%);
+}
+
+.sky-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(94, 160, 242, 0.25) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* =========================================================================
+   PREMIUM CLOUD SYSTEM
+   -------------------------------------------------------------------------
+   Three layers, stratified by:
+     - blur (atmospheric perspective — distant things are softer)
+     - opacity (distant things are washed out by haze)
+     - drift speed (distant things appear to move slower — parallax)
+     - drift direction (subtle counter-motion between layers prevents the
+       eye from latching onto a single direction and seeing the loop)
+   ========================================================================= */
+
+.cloud-layer {
+  position: absolute;
+  inset: -10% -20%;          /* overflow the viewport so wrap-around is invisible */
+  pointer-events: none;
+  will-change: transform;    /* hint the browser to GPU-composite this layer */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Layer stratification — blur is the single biggest "premium vs cartoon" lever */
+.cloud-layer--bg {
+  filter: blur(6px);
+  opacity: 0.5;
+  z-index: 2;
+}
+.cloud-layer--mid {
+  filter: blur(2px);
+  opacity: 0.75;
+  z-index: 3;
+}
+.cloud-layer--fg {
+  filter: blur(0px);
+  opacity: 0.9;
+  z-index: 4;
+}
+
+/* -------------------------------------------------------------------------
+   Drift keyframes
+   -------------------------------------------------------------------------
+   The animation distance is LARGER than the visible viewport so the loop
+   reset happens off-screen. Combined with the layer's negative inset, the
+   reset is never visible.
+
+   Each layer also has a very gentle vertical bob — real wind isn't purely
+   horizontal. The bob period is deliberately incommensurate with the drift
+   period, so the combined motion never visibly repeats.
+
+   Durations are LONG (180s–360s) to satisfy "extremely subtle, no obvious
+   looping" — at these speeds, a single cloud crosses the viewport over
+   several minutes.
+   ------------------------------------------------------------------------- */
+
+@keyframes drift-bg {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(8%, -1.5%, 0); }
+}
+@keyframes drift-mid {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-10%, 1%, 0); }
+}
+@keyframes drift-fg {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(12%, -0.8%, 0); }
+}
+
+/* Vertical bob — applied as a SECOND animation on a wrapper, with a
+   different (incommensurate) period to prevent visible cycling. */
+@keyframes bob-bg {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, 0.8%, 0); }
+}
+@keyframes bob-mid {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -0.6%, 0); }
+}
+@keyframes bob-fg {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, 1.1%, 0); }
+}
+
+.drift-bg  { animation: drift-bg  360s linear infinite alternate; }
+.drift-mid { animation: drift-mid 240s linear infinite alternate; }
+.drift-fg  { animation: drift-fg  180s linear infinite alternate; }
+
+.bob-bg  { animation: bob-bg  47s ease-in-out infinite; }
+.bob-mid { animation: bob-mid 53s ease-in-out infinite; }
+.bob-fg  { animation: bob-fg  41s ease-in-out infinite; }
+
+/* Respect reduced-motion — premium products always do */
+@media (prefers-reduced-motion: reduce) {
+  .drift-bg, .drift-mid, .drift-fg,
+  .bob-bg,   .bob-mid,   .bob-fg {
+    animation: none !important;
+  }
+}
+
+/* Initial states for entrance animations */
+.fade-in-up { opacity: 0; }
+
+::selection {
+  background: rgba(255, 255, 255, 0.4);
+  color: #1a3a78;
+}
