@@ -1,4 +1,4 @@
-# Recall — Coming Soon
+# Recall — Coming Soon.
 
 A teaser landing page for Recall. Sky-blue background with drifting clouds, centered wordmark, "Coming your way soon." tagline in Inter Bold 68px.
 
